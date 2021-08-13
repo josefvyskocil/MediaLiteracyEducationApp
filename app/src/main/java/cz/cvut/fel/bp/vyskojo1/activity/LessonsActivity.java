@@ -2,6 +2,7 @@ package cz.cvut.fel.bp.vyskojo1.activity;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.NavUtils;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -14,6 +15,7 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
+import cz.cvut.fel.bp.vyskojo1.MainActivity;
 import cz.cvut.fel.bp.vyskojo1.database.CustomAdapter;
 import cz.cvut.fel.bp.vyskojo1.database.MyDatabaseHelper;
 import cz.cvut.fel.bp.vyskojo1.R;
@@ -23,6 +25,8 @@ public class LessonsActivity extends AppCompatActivity {
     RecyclerView recyclerView;
     ImageView empty_imageview;
     TextView no_data;
+
+    String tag;
 
     MyDatabaseHelper myDB;
     ArrayList<String> lesson_id, lesson_difficulty, lesson_type, lesson_question, lesson_image,
@@ -35,7 +39,7 @@ public class LessonsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lessons);
 
-        String sessionId = getIntent().getStringExtra("view");
+        tag = getIntent().getStringExtra("tag");
 
         recyclerView = findViewById(R.id.recyclerView);
         empty_imageview = findViewById(R.id.empty_imageview);
@@ -58,13 +62,14 @@ public class LessonsActivity extends AppCompatActivity {
 
         storeDataInArrays();
 
-        customAdapter = new CustomAdapter(LessonsActivity.this,this, lesson_id,
-                lesson_difficulty, lesson_type, lesson_question, lesson_image, lesson_completed,
-                lesson_right_answer, lesson_title, lesson_answer_1, lesson_answer_2, lesson_answer_3,
-                lesson_answer_4, lesson_answer_description);
-        recyclerView.setAdapter(customAdapter);
-        recyclerView.setLayoutManager(new LinearLayoutManager(LessonsActivity.this));
+    }
 
+    protected void onResume() {
+        super.onResume();
+        lesson_id.clear();
+        lesson_title.clear();
+        lesson_completed.clear();
+        storeDataInArrays();
     }
 
     @Override
@@ -75,6 +80,12 @@ public class LessonsActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    public void onBackPressed() {
+        NavUtils.navigateUpTo(this, new Intent(this,
+                MainActivity.class));
+    }
+
     void storeDataInArrays() {
         Cursor cursor = myDB.readAllData();
         if (cursor.getCount() == 0) {
@@ -82,16 +93,21 @@ public class LessonsActivity extends AppCompatActivity {
             no_data.setVisibility(View.VISIBLE);
         } else {
             while (cursor.moveToNext()) {
-                lesson_id.add(cursor.getString(0));
-                lesson_title.add(cursor.getString(7));
-                lesson_completed.add(cursor.getString(5));
-                //TODO nastavit visibilitu podle cursor.getString(5)
-//                if (Integer.parseInt(cursor.getString(5)) == 1)
-//                    recyclerView.findViewHolderForAdapterPosition(1).itemView.findViewById(R.id.completed).setVisibility(View.VISIBLE);
+                if (cursor.getString(2).equals(tag)) {
+                    lesson_id.add(cursor.getString(0));
+                    lesson_title.add(cursor.getString(7));
+                    lesson_completed.add(cursor.getString(5));
+                }
             }
             empty_imageview.setVisibility(View.GONE);
             no_data.setVisibility(View.GONE);
         }
+        customAdapter = new CustomAdapter(LessonsActivity.this,this, lesson_id,
+                lesson_difficulty, lesson_type, lesson_question, lesson_image, lesson_completed,
+                lesson_right_answer, lesson_title, lesson_answer_1, lesson_answer_2, lesson_answer_3,
+                lesson_answer_4, lesson_answer_description);
+        recyclerView.setAdapter(customAdapter);
+        recyclerView.setLayoutManager(new LinearLayoutManager(LessonsActivity.this));
     }
 
 }

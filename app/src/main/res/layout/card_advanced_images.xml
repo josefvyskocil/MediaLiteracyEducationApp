@@ -8,6 +8,7 @@
     android:layout_marginBottom="20dp"
     android:minHeight="150dp"
     android:onClick="onLectionsClicked"
+    android:tag="advanced_images"
     app:cardBackgroundColor="#FF8033"
     app:cardCornerRadius="16dp"
     app:cardElevation="@dimen/card_itemcourse_elevation">
